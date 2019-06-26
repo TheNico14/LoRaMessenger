@@ -10,37 +10,53 @@
 #include <U8x8lib.h>
 
 // Config
-#define LORANODE    1
-#define INDEXTITLE  "LoRaMessenger"
-#define WIFIPREFIX  "LoRa Node"
-#define DNS         "node"
-#define LORABAND    915E6 // 915E6 for US, 868E6 for EU
+#define LORANODE      1
+#define INDEXTITLE    "LoRaMessenger"
+#define WIFIPREFIX    "LoRa Node"
+#define DNS           "node"
+#define LORABAND      915E6 // 915E6 for US, 868E6 for EU
+#define WIFIPASS      "Password"
+#define SCREENTIMEOUT 60000 // 1 minute screen timeout
 
 // Pinout
-#define SCK         5
-#define MISO        19
-#define MOSI        27
-#define SS          18
-#define RST         14 
-#define DI0         26
-#define I2C_SCL     22
-#define I2C_SDA     21
-#define LCD_RESET   16
+#define SCK           5
+#define MISO          19
+#define MOSI          27
+#define SS            18
+#define RST           14 
+#define DI0           26
+#define I2C_SCL       22
+#define I2C_SDA       21
+#define LCD_RESET     16
 
 // Init System Settings
-#define MSGLENGTH   200
+#define MSGLENGTH     200
 U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 22, /* data=*/ 21, /* reset=*/ 16);
 IPAddress ip(10,10,10,1);
 IPAddress subnet(255,255,255,0);
 const byte DNS_PORT = 53;
-String allMsgs="<li>Welcome to LoRaMessenger</li>";
-String node_name = String(String(WIFIPREFIX)+" "+String(LORANODE));
+String allMsgs = "<li>Welcome to LoRaMessenger</li>";
+String node_name = String(WIFIPREFIX)+" "+String(LORANODE);
+String sender_name = node_name;
+String last_message_sent = "";
+String last_message_received = "";
+String message_received_by = "";
+bool send_back_received;
+bool screen_flag = false;
+unsigned long startMillis;
+unsigned long currentMillis;
 DNSServer dnsServer;
 AsyncWebServer webServer(80);
 
+// Packet codes
+const byte PC_SENDER = 0xA0;
+const byte PC_ENCRYPTED = 0xA1;
+const byte PC_MESSAGE = 0xA2;
+const byte PC_RECEIVED = 0xA3;
+
 // Message structure
 typedef struct Data {
-  byte msg_from;
+  String sender;
   String msg;
   int rssi;
 } Data;
@@ -59,12 +75,22 @@ void setup() {
   // Display setup
   setup_LCD();
   updateScreen(node_name, "No messages yet", 0);
+
+  // Start timer
+  startMillis = millis();
 }
 
 void loop() { 
 
   // Handle DNS
-  dnsServer.processNextRequest(); 
+  dnsServer.processNextRequest();
+  if (send_back_received) handle_send_back_received();
+
+  currentMillis = millis();
+  if (currentMillis - startMillis >= SCREENTIMEOUT && screen_flag) {
+    screen_flag = false;
+    u8x8.setPowerSave(1);
+  }
 }
 
 void LoRa_send(String message) {
@@ -77,46 +103,109 @@ void LoRa_send(String message) {
   // Message send
   if(message != ""){
     Serial.println("Sending message: "+message);
-    allMsgs = allMsgs+"<li>"+"<b>Me:</b> "+message+"</li>";
+    allMsgs = allMsgs+"<li>"+"<b>"+sender_name+": </b> "+message+"</li>";
    
     LoRa.beginPacket();
-    LoRa.write(LORANODE);
-    LoRa.print(message);
-
+    LoRa_pack(PC_SENDER, sender_name);
+    LoRa_pack(PC_MESSAGE, message);
     if (LoRa.endPacket()) Serial.println("Message successfully sent");
     else Serial.println("Error sending message");
-    
-    String display_message = String("Me: "+message);
+
+    last_message_sent = message;
+    String display_message = sender_name+": "+message;
     updateScreen(node_name, display_message, 0);
+  
+    message_received_by = "Last message received by: ";
   }
   LoRa.receive();
+}
+
+void LoRa_pack(byte code, String string) {
+
+  // Create and send packet
+  LoRa.write(code);
+  LoRa.write(string.length());
+  LoRa.print(string);
 }
 
 void LoRa_receive(int packetSize) {
 
   Data message;
-  
-  message.msg_from = LoRa.read();
+  byte p_code;
+  byte str_length;
+  String display_message;
+  String received;
+  bool received_flag = false;
+  bool message_flag = false;
+
   while (LoRa.available()) {
-    message.msg += (char)LoRa.read();
+    
+    p_code = LoRa.read();
+    str_length = LoRa.read();
+    
+    switch(p_code) {
+      case PC_SENDER:
+        message.sender = LoRa_read_str(str_length);
+        break;
+      case PC_MESSAGE:
+        message.msg = LoRa_read_str(str_length);
+        message_flag = true;
+        break;
+      case PC_RECEIVED: 
+        received = LoRa_read_str(str_length);
+        received_flag = true;
+        break;
+    }
   }
-  message.rssi = LoRa.packetRssi();
+  if (message_flag) {
+    message_flag = false;
+    display_message = message.sender+": "+message.msg;
+    Serial.println("Received message from: "+message.sender);
+    Serial.println("Message: "+message.msg);
+    message.rssi = LoRa.packetRssi();
+    Serial.println("RSSI: "+String(message.rssi));
+    updateScreen(node_name, display_message, message.rssi);  
+    allMsgs = allMsgs+"<li>"+"<b>"+message.sender+": </b>"+message.msg+"</li>";
+    Serial.println("Sending received message back");
+    last_message_received = message.msg;
+    send_back_received = true;  
+  }
+  if (received_flag) {
+    received_flag = false;
+    if (received == last_message_sent){
+      message_received_by = message_received_by+message.sender+" ";
+      Serial.println("Message received by: "+message_received_by);
+    }
+  }
+}
 
-  String display_message = String("Node "+String(message.msg_from)+": "+message.msg);
+String LoRa_read_str(byte str_length) {
+  
+  String string = "";
 
-  Serial.println("Received message from: Node "+String(message.msg_from));
-  Serial.println("Message: "+message.msg);
-  Serial.println("RSSI: "+String(message.rssi));
+  for (int i = 0; i < str_length; i++) {
+    string += (char)LoRa.read();
+  }
 
-  updateScreen(node_name, display_message, message.rssi);  
-  allMsgs = allMsgs+"<li>"+"<b>Node "+String(message.msg_from)+": </b>"+message.msg+"</li>";
+  return string;
+}
+
+void handle_send_back_received() {
+  
+    send_back_received = false;
+    delay(LORANODE*100); // Anticollision
+    LoRa.beginPacket();
+    LoRa_pack(PC_SENDER, sender_name);
+    LoRa_pack(PC_RECEIVED, last_message_received);
+    LoRa.endPacket();
+    LoRa.receive();
 }
 
 void setup_server() {
   
   // WiFi setup
   WiFi.mode(WIFI_AP);
-  WiFi.softAP(node_name.c_str());
+  WiFi.softAP(node_name.c_str(), WIFIPASS);
   delay(200);
   WiFi.softAPConfig(ip, ip, subnet);
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
@@ -135,10 +224,17 @@ void setup_server() {
   });
   webServer.on("/submit", HTTP_POST, [](AsyncWebServerRequest *request) {
     AsyncWebParameter* p = request->getParam(0);
-    String message = String(p->value().c_str());  
+    String message = String(p->value().c_str());
     if(message != ""){
       LoRa_send(message);    
     }
+    request->redirect("/");
+  }); 
+  webServer.on("/rename", HTTP_POST, [](AsyncWebServerRequest *request) {
+    AsyncWebParameter* p = request->getParam(0);
+    if(String(p->value().c_str()) != ""){
+       sender_name = String(p->value().c_str());    
+    }   
     request->redirect("/");
   }); 
   webServer.begin();
@@ -168,24 +264,28 @@ void setup_LCD() {
   u8x8.begin();
   u8x8.setFont(u8x8_font_artossans8_r);
   u8x8.setFlipMode(1);
-
 }
 
 void updateScreen(String index, String message, int rssi){
 
   u8x8.clear();
   u8x8.drawString(0,0,index.c_str());
-  u8x8.drawString(0,2,"Last message:");
-  u8x8.drawString(0,3,(message.substring(0,15)).c_str());
-  u8x8.drawString(0,4,(message.substring(15,30)).c_str());
-  u8x8.drawString(0,5,(message.substring(30,45)).c_str());
-  if(rssi != 0) u8x8.drawString(0,6,(String("RSSI: "+String(rssi))).c_str());
+  u8x8.drawString(0,2,(message.substring(0,15)).c_str());
+  u8x8.drawString(0,3,(message.substring(15,30)).c_str());
+  u8x8.drawString(0,4,(message.substring(30,45)).c_str());
+  u8x8.drawString(0,5,(message.substring(45,60)).c_str());
+  if(rssi != 0) u8x8.drawString(0,6,("RSSI: "+String(rssi)).c_str());
+  screen_flag = true;
+  u8x8.setPowerSave(0);
+  startMillis = currentMillis;
 }
 
 String index() {
-  return header()+"<div></div><div><label>Messages:</label>"+"<ul style=list-style: none;>"+allMsgs+
-    "</ul>"+"</div><div><form action=/submit method=post id=usrform><label>Post new message:</label><br/>"+
-    "<textarea name=message form=usrform></textarea><br/><input type=submit value=Send></form>";
+  return header()+"<div><form action=/rename method=post><br/>"+
+    "<label>Your name:</label><textarea name=sendername rows=1>"+sender_name+"</textarea><br/><input type=submit value=Update></form></div><div></div>"+
+    "<div><label>Messages:</label>"+"<ul style=list-style: none;>"+allMsgs+
+    "</ul><br/>"+message_received_by+"<br/></div><div>"+
+    "<form action=/submit method=post><br/><label>Post new message:</label><textarea name=message></textarea><br/><input type=submit value=Send></form></div>";
 }
 
 String header(void) {
