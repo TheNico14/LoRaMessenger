@@ -11,6 +11,17 @@ A node can be easily installed inside a small box with a battery, thus creating 
 
 ![Screenshot](https://github.com/TheNico14/LoRaMessenger/blob/master/Images/Build.jpg)
 
+# Project details
+After the ESP is started, a new WiFi network called LoRa Node is created and should be visible, the default WiFi password is Password.\
+When a device is connected to the network a captive portal should open, if nothing happens open a web browser and navigate to node.local or 10.10.10.1.
+
+The web interface is now presented on your browser, the chat has the following features:
+- At the beginning of the page you can enter your name so that the recipient knows who is writing. Press update to save the new name.
+- The message section shows all sent and received messages in chronological order.
+- The name of all devices that have received the message correctly is shown below the messages.
+- And last but not least, at the bottom of the page there is a text box to send a new message.
+
+Note that as of right now a page refresh is necessary to update the received messages and read receipts.
 
 # Installation
 This program requires the following libraries:
@@ -29,6 +40,12 @@ Pin definitions may need to be edited in case another board is used (Pin definit
 
 # Notes
 When a message is received, the text will be displayed instantly on the display but will not appear on the web interface until the page is refreshed.
+
+# Future improvements
+Other features that are planned for the future are:
+- Message encryption, as of right one all messages are sent unencrypted.
+- Some sort of relaying to create a bigger network of nodes.
+- Redesign of the web interface and automatic message refresh.
 
 # License
 MIT license.
