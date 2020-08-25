@@ -55,7 +55,7 @@ L1 config:
 
 - L1BUFFER: Transmission packet queue. Increase if using big networks of nodes or using high spreading factors.
 - TTL: Packet time to live. Sets the maximum number of hops that a packet can do before expiring.\
-Possible values: 1 (only direct messages, no relaying), <1.
+Possible values: 1 (only direct messages, no relaying), >1.
 - BROADCASTADDR: Broadcast address number.
 
 L3 config:
@@ -80,7 +80,7 @@ Network config:
 
 - WIFIENABLED: Wi-Fi enabled. This can be used to reduce power used in case of deploying a node only for relaying of messages.
 - NODENAMEOVERRIDEEN: Node name override enable. Used to override the default node name (Node [number]) to the string specified in NODENAMEOVERRIDE.
-- NODENAMEOVERRIDE: Nome name ovveride. This can be used for setting the node name without modifying it on the web interface. Useful when setting up a relay only node.
+- NODENAMEOVERRIDE: Nome name override. This can be used for setting the node name without modifying it on the web interface. Useful when setting up a relay only node.
 - WIFISSID: Wi-Fi network name prefix (LoRaMessenger [number])
 - DNSPORT: DNS port.
 
