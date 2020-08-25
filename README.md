@@ -2,7 +2,7 @@
 
 LoRaMessenger is an off-grid chat between LoRa equipped ESP32 nodes with a simple wireless web interface.
 
-<img src="https://github.com/TheNico14/LoRaMessenger/blob/master/Documentation/Images/interface.png?raw=true" width="456" height="489">
+<img src="https://github.com/TheNico14/LoRaMessenger/blob/master/Documentation/Images/interface.jpg?raw=true" width="456" height="489">
 
 The ESP32 hosts a Wi-Fi network that will provide a simple chat-like interface that will display online nodes, received and sent messages, and some text boxes to set the node name, destination node, and message.
 
@@ -10,7 +10,7 @@ Since the LoRa communication protocol is used to send and receive messages, it i
 
 Most ESP32 LoRa modules, such as the TTGO LoRa32 or Heltec Wifi LoRa 32, are equipped with a display, so you can use them independently to receive messages like a pager.
 
-<img src="https://github.com/TheNico14/LoRaMessenger/blob/master/Documentation/Images/welcome.png?raw=true" width="456" height="456">
+<img src="https://github.com/TheNico14/LoRaMessenger/blob/master/Documentation/Images/welcome.jpg?raw=true" width="456" height="456">
 
 A node can be easily installed inside a small box with a battery, thus creating a communication system that can communicate even in areas where there is no phone signal.
 
