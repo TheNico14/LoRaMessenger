@@ -36,7 +36,7 @@
 
 // Network config
 #define WIFIENABLED 1            // Wi-Fi enabled
-#define NODENAMEOVERRIDEEN 1     // Node name override enable (ex: relay without Wi-Fi)
+#define NODENAMEOVERRIDEEN 0     // Node name override enable (ex: relay without Wi-Fi)
 #define NODENAMEOVERRIDE "Home"  // Node name override
 #define WIFISSID "LoRaMessenger" // Wi-Fi prefix (ex: LoRaMessenger 1)
 #define DNSPORT 53               // DNS port
