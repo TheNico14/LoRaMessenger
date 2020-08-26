@@ -68,7 +68,7 @@ return_type message_save(uint8_t receiver, uint8_t sender, char *message, uint32
 }
 
 /**
- * @brief    Saves an acknowledgement into messages list
+ * @brief    Saves an acknowledgment into messages list
  * 
  * @param    sender: Message sender
  * @param    id: Message id
@@ -107,11 +107,11 @@ return_type message_saveAck(uint8_t sender, uint32_t id)
 }
 
 /**
- * @brief    Returns node number from message acknowledgement list
+ * @brief    Returns node number from message acknowledgment list
  * 
  * @param    sender: Message sender
  * @param    id: Message id
- * @param    ack_number: Acknowledgement list index
+ * @param    ack_number: acknowledgment list index
  * @return   uint8_t node number
  */
 uint8_t message_getAckNode(uint8_t sender, uint32_t id, uint8_t ack_number)
@@ -128,11 +128,11 @@ uint8_t message_getAckNode(uint8_t sender, uint32_t id, uint8_t ack_number)
 }
 
 /**
- * @brief    Returns number of acknowledgements for a given message
+ * @brief    Returns number of acknowledgments for a given message
  * 
  * @param    sender: Message sender
  * @param    id: Message id
- * @return   uint8_t acknowledgements number
+ * @return   uint8_t acknowledgments number
  */
 uint8_t message_getAckNum(uint8_t sender, uint32_t id)
 {

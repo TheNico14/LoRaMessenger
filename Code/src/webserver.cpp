@@ -69,9 +69,12 @@ void webserver_init()
     AsyncWebParameter *p = request->getParam(0);
     if (strlen(p->value().c_str()) > 0 && strlen(p->value().c_str()) < 15)
     {
-      strcpy(node_name, p->value().c_str());
-      L3_updateNode();
-      L2_sendAnnounce();
+      if (strcmp(p->value().c_str(), "Broadcast") != 0 && strcmp(p->value().c_str(), "broadcast") != 0)
+      {
+        strcpy(node_name, p->value().c_str());
+        L3_updateNode();
+        L2_sendAnnounce();
+      }
     }
     request->redirect("/");
   });

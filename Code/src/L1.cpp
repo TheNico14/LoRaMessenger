@@ -168,8 +168,8 @@ return_type L1_packSend(pack_struct packet)
     break;
     case payload_ack:
     {
-      payload_acknowledgement_struct *payload_acknowledgement = (payload_acknowledgement_struct *)packet.payload;
-      LoRa.write((uint8_t *)&(payload_acknowledgement->packet_id), 4);
+      payload_acknowledgment_struct *payload_acknowledgment = (payload_acknowledgment_struct *)packet.payload;
+      LoRa.write((uint8_t *)&(payload_acknowledgment->packet_id), 4);
     }
     break;
     case payload_ann:
@@ -277,9 +277,9 @@ return_type L1_receive()
     uint32_t message_crc;
     LoRa.readBytes((uint8_t *)&message_crc, 4);
 
-    packet.payload = L2_setPayloadAcknowledgement(message_crc);
+    packet.payload = L2_setPayloadacknowledgment(message_crc);
 
-    L2_handleAcknowledgement(packet);
+    L2_handleacknowledgment(packet);
   }
   break;
   case payload_ann:
@@ -342,7 +342,7 @@ void L1_printPacket(pack_struct packet)
     break;
 
   case payload_ack:
-    Serial.printf("acknowledgement packet: ---\n");
+    Serial.printf("acknowledgment packet: ---\n");
     break;
 
   case payload_ann:
@@ -368,8 +368,8 @@ void L1_printPacket(pack_struct packet)
   break;
   case payload_ack:
   {
-    payload_acknowledgement_struct *payload_acknowledgement = (payload_acknowledgement_struct *)packet.payload;
-    Serial.printf("Packet id: %x\n", payload_acknowledgement->packet_id);
+    payload_acknowledgment_struct *payload_acknowledgment = (payload_acknowledgment_struct *)packet.payload;
+    Serial.printf("Packet id: %x\n", payload_acknowledgment->packet_id);
   }
   break;
   case payload_ann:

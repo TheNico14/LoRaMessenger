@@ -7,7 +7,7 @@
  * @brief    OSI layer 2: Datalink layer.
  *           This layer handles received packets, relaying of packets and
  *           provides functions for sending announces, messages
- *           and acknowledgements.
+ *           and acknowledgments.
  */
 
 // Include libraries
@@ -46,7 +46,7 @@ return_type L2_handleMessage(pack_struct packet)
         return ret_receive_duplicate;
 
       message_save(NODENUMBER, packet.sender, ((payload_message_struct *)packet.payload)->message_ptr, packet.id);
-      L2_sendAcknowledgement(packet.sender, packet.id);
+      L2_sendacknowledgment(packet.sender, packet.id);
 
       message_printLastN(5);
 
@@ -62,24 +62,24 @@ return_type L2_handleMessage(pack_struct packet)
 }
 
 /**
- * @brief    Handles a received acknowledgement packet
+ * @brief    Handles a received acknowledgment packet
  * 
  * @param    packet: Packet to be handled
  * @return   return_type status
  */
-return_type L2_handleAcknowledgement(pack_struct packet)
+return_type L2_handleacknowledgment(pack_struct packet)
 {
   if (packet.sender != NODENUMBER && (packet.next_node == NODENUMBER || packet.next_node == BROADCASTADDR))
   {
     if (packet.receiver == NODENUMBER)
     {
-      message_saveAck(packet.sender, ((payload_acknowledgement_struct *)packet.payload)->packet_id);
-      int acks = message_getAckNum(packet.sender, ((payload_acknowledgement_struct *)packet.payload)->packet_id);
+      message_saveAck(packet.sender, ((payload_acknowledgment_struct *)packet.payload)->packet_id);
+      int acks = message_getAckNum(packet.sender, ((payload_acknowledgment_struct *)packet.payload)->packet_id);
       int node_number;
 
       for (int i = 0; i < acks; i++)
       {
-        node_number = message_getAckNode(packet.sender, ((payload_acknowledgement_struct *)packet.payload)->packet_id, i);
+        node_number = message_getAckNode(packet.sender, ((payload_acknowledgment_struct *)packet.payload)->packet_id, i);
         Serial.printf("Message received by %s\n\n", L3_getNodeName(node_number));
       }
     }
@@ -179,7 +179,7 @@ return_type L2_sendMessage(uint8_t receiver, char *message)
  * @param    packet_id: Packet id
  * @return   return_type status
  */
-return_type L2_sendAcknowledgement(uint8_t receiver, uint32_t packet_id)
+return_type L2_sendacknowledgment(uint8_t receiver, uint32_t packet_id)
 {
   if (receiver == 0 || receiver == NODENUMBER || (receiver > MAXNODES && receiver != BROADCASTADDR))
     return ret_send_error;
@@ -194,7 +194,7 @@ return_type L2_sendAcknowledgement(uint8_t receiver, uint32_t packet_id)
   packet.id = millis();
   packet.type = payload_ack;
 
-  packet.payload = L2_setPayloadAcknowledgement(packet_id);
+  packet.payload = L2_setPayloadacknowledgment(packet_id);
 
   return L1_enqueue_outPacket(packet);
 }
@@ -246,19 +246,19 @@ void *L2_setPayloadMessage(char *message)
 }
 
 /**
- * @brief    Sets packet payload as acknowledgement
+ * @brief    Sets packet payload as acknowledgment
  * 
  * @param    packet_id: Pointer to message to be sent
  * @return   void* payload pointer
  */
-void *L2_setPayloadAcknowledgement(uint32_t packet_id)
+void *L2_setPayloadacknowledgment(uint32_t packet_id)
 {
-  payload_acknowledgement_struct *payload_acknowledgement;
-  payload_acknowledgement = (payload_acknowledgement_struct *)malloc(sizeof(payload_acknowledgement_struct));
+  payload_acknowledgment_struct *payload_acknowledgment;
+  payload_acknowledgment = (payload_acknowledgment_struct *)malloc(sizeof(payload_acknowledgment_struct));
 
-  payload_acknowledgement->packet_id = packet_id;
+  payload_acknowledgment->packet_id = packet_id;
 
-  return payload_acknowledgement;
+  return payload_acknowledgment;
 }
 
 /**

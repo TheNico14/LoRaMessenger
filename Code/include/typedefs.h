@@ -12,6 +12,10 @@
 
 #include <Arduino.h>
 
+/**
+ * @brief    Packet payload type
+ * 
+ */
 typedef enum payload_type
 {
   payload_msg = 0,
@@ -19,6 +23,10 @@ typedef enum payload_type
   payload_ann
 } payload_type;
 
+/**
+ * @brief    Function return type
+ * 
+ */
 typedef enum return_type
 {
   ret_ok = 0,
@@ -40,6 +48,10 @@ typedef enum return_type
   ret_message_found
 } return_type;
 
+/**
+ * @brief    Packet structure
+ * 
+ */
 typedef struct
 {
   uint8_t ttl;
@@ -53,24 +65,40 @@ typedef struct
   int rssi;
 } pack_struct;
 
-typedef struct //payload_message_struct
+/**
+ * @brief    Message payload structure
+ * 
+ */
+typedef struct
 {
   uint8_t message_size;
   char *message_ptr;
 } payload_message_struct;
 
-typedef struct //payload_acknowledgement_struct
+/**
+ * @brief    Acknowledgment payload structure
+ * 
+ */
+typedef struct
 {
   uint32_t packet_id;
-} payload_acknowledgement_struct;
+} payload_acknowledgment_struct;
 
-typedef struct //payload_announce_struct
+/**
+ * @brief    Announce payload structure
+ * 
+ */
+typedef struct
 {
   uint8_t name_size;
   char *name_ptr;
 } payload_announce_struct;
 
-typedef struct //routing_table_struct
+/**
+ * @brief    Routing table structure
+ * 
+ */
+typedef struct
 {
   uint8_t active;
   uint8_t next_node;
@@ -81,6 +109,10 @@ typedef struct //routing_table_struct
   uint32_t timestamp;
 } routing_table_struct;
 
+/**
+ * @brief    Message structure
+ * 
+ */
 typedef struct
 {
   uint8_t receiver;
